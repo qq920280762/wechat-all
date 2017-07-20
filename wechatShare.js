@@ -24,12 +24,22 @@ let APPID = config.WECHAT.JSSDK.APPID;
 //公众号 appsecret
 let SECRET = config.WECHAT.JSSDK.SECRET;
 
+let wechatShare = module.exports = function(opts){
+
+    if(!!opts && !!opts.config){
+
+        APPID = opts.config.WECHAT.JSSDK.APPID;
+
+        SECRET = opts.config.WECHAT.JSSDK.SECRET;
+    }
+}
+
 /**
  * 对所有待签名参数(参数名转为小写)按照字段名的ASCII 码从小到大排序（字典序）
  * @param args
  * @returns {string}
  */
-exports.shareSign = (args) => {
+wechatShare.prototype.shareSign = (args) => {
     let keys   = Object.keys(args);
     keys       = keys.sort();
     let string = '';
@@ -103,7 +113,7 @@ let getJsapiTicket = (ACCESS_TOKEN)=> {
  *  @param URL 签名用的url必须是调用JS接口页面的完整URL 且不能有'#'
  *  @returns {Promise}
  */
-module.exports.getShareOpts = (URL) => {
+wechatShare.prototype.getShareOpts = (URL) => {
     let ret       = {
         nonceStr : utils.randomString(14),
         timestamp: utils.getTimeSamp(),

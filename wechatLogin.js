@@ -24,6 +24,18 @@ let SCOPE = config.WECHAT.LOGIN.SCOPE;
 //公众号的appsecret
 let SECRET = config.WECHAT.LOGIN.SECRET;
 
+let wechatLogin = module.exports = function(opts){
+
+    if(!!opts && !!opts.config){
+        APPID = opts.config.WECHAT.LOGIN.APPID;
+
+        REDIRECT_URI = opts.config.WECHAT.LOGIN.REDIRECT_URI;
+
+        SCOPE = opts.config.WECHAT.LOGIN.SCOPE;
+
+        SECRET = opts.config.WECHAT.LOGIN.SECRET;
+    }
+}
 
 /**
  * 1. 页面请求code,重定向到微信
@@ -33,7 +45,7 @@ let SECRET = config.WECHAT.LOGIN.SECRET;
  *  若用户禁止授权，则重定向后不会带上code参数，仅会带上state参数
  *      success:    redirect_uri?state=STATE
  */
-exports.getCode = (req, res)=> {
+wechatLogin.prototype.getCode = (req, res)=> {
     let redirect_uri = REDIRECT_URI;
     if (req.params && req.params.role && redirect_uri.indexOf(req.params.role) < 0) {
         redirect_uri += '/' + req.params.role;
@@ -55,7 +67,7 @@ exports.getCode = (req, res)=> {
     }
  */
 
-exports.getAccessToken = (CODE)=> {
+wechatLogin.prototype.getAccessToken = (CODE)=> {
     return new Promise((resolve, reject)=> {
         request.get('https://api.weixin.qq.com/sns/oauth2/access_token?appid=' + APPID + '&secret=' + SECRET + '&code=' + CODE + '&grant_type=authorization_code')
             .then((result)=> {
@@ -94,7 +106,7 @@ exports.getAccessToken = (CODE)=> {
     }
  */
 
-exports.refreshAccessToken = (REFRESH_TOKEN)=> {
+wechatLogin.prototype.refreshAccessToken = (REFRESH_TOKEN)=> {
     return new Promise((resolve, reject)=> {
         request.get('https://api.weixin.qq.com/sns/oauth2/refresh_token?appid=' + APPID + '&grant_type=refresh_token&refresh_token=' + REFRESH_TOKEN)
             .then((result)=> {
@@ -127,7 +139,7 @@ exports.refreshAccessToken = (REFRESH_TOKEN)=> {
         "errcode":0,"errmsg":"ok"
     }
  */
-exports.checkToken = (ACCESS_TOKEN, OPENID)=> {
+wechatLogin.prototype.checkToken = (ACCESS_TOKEN, OPENID)=> {
     return new Promise((resolve, reject)=> {
         request.get('https://api.weixin.qq.com/sns/auth?access_token=' + ACCESS_TOKEN + '&openid=' + OPENID)
             .then((result)=> {
@@ -172,7 +184,7 @@ exports.checkToken = (ACCESS_TOKEN, OPENID)=> {
     }
  */
 
-exports.getUserinfo = (ACCESS_TOKEN, OPENID)=> {
+wechatLogin.prototype.getUserinfo = (ACCESS_TOKEN, OPENID)=> {
     return new Promise((resolve, reject)=> {
         request.get('https://api.weixin.qq.com/sns/userinfo?access_token=' + ACCESS_TOKEN + '&openid=' + OPENID)
             .then((result)=> {
