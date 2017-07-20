@@ -1,0 +1,31 @@
+{
+  "WECHAT": {
+    "PAY": {
+      "APPID": "wxxxxxxxxxxxxxxxxx",
+      "MCHID": "1111111111",
+      "TRADETYPE": "JSAPI",
+      "BODY": "XXX-商品",
+      "CALLBACKURL": "http://hostname/pay_callback",
+      "KEY": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "EXPIREDTIME": 30
+    },
+    "LOGIN": {
+      "REDIRECT_URI": "http://hostname/auth_callback",
+      "SCOPE": "snsapi_base",
+      "APPID": "wxxxxxxxxxxxxxxxxx",
+      "SECRET": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    },
+    "JSSDK": {
+      "APPID": "wxxxxxxxxxxxxxxxxx",
+      "SECRET": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    }
+  },
+  "cache": {
+    "host": "127.0.0.1",
+    "port": 6379,
+    "opts": {
+      "auth_pass": "123456"
+    },
+    "db": 14
+  }
+}

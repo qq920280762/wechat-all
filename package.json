@@ -1,0 +1,34 @@
+{
+  "name": "wechat-all",
+  "version": "1.0.0",
+  "description": "wechat pay and share  and login and  auth",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/qq920280762/wechat-all.git"
+  },
+  "keywords": [
+    "wechat",
+    "all",
+    "api",
+    "pay",
+    "share",
+    "login",
+    "auth"
+  ],
+  "author": "sc_gongchao",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/qq920280762/wechat-all/issues"
+  },
+  "homepage": "https://github.com/qq920280762/wechat-all#readme",
+  "dependencies": {
+    "cache_utils": "^1.0.0",
+    "crypto": "0.0.3",
+    "request": "^2.81.0",
+    "xml2js": "^0.4.17"
+  }
+}
