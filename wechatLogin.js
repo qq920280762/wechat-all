@@ -5,24 +5,24 @@
  * 公众号开发: 如果需要unionid,需要把公众号绑定到开放平台
  */
 'use strict';
-const request = require('request');
+const request = new require('request-utils')();
 const config  = require('./wechatConfig');
-const Cache = require('cache_utils');
+const Cache   = require('cache_utils');
 
 const autoCache = new Cache({
     showUpdateLog: true,
     store        : new Cache.RedisStore(config.cache) //默认内存
 });
 //公众号唯一标识（企业号corpid即为此appId）
-let APPID        = config.WECHAT.LOGIN.APPID;
+let APPID = config.WECHAT.LOGIN.APPID;
 //授权后重定向的回调链接地址，请使用urlEncode对链接进行处理
 let REDIRECT_URI = config.WECHAT.LOGIN.REDIRECT_URI;
 // 应用授权作用域，
 // snsapi_base （不弹出授权页面，直接跳转，只能获取用户openid），
 // snsapi_userinfo （弹出授权页面，可通过openid拿到昵称、性别、所在地。并且，即使在未关注的情况下，只要用户授权，也能获取其信息）
-let SCOPE        = config.WECHAT.LOGIN.SCOPE;
+let SCOPE = config.WECHAT.LOGIN.SCOPE;
 //公众号的appsecret
-let SECRET       = config.WECHAT.LOGIN.SECRET;
+let SECRET = config.WECHAT.LOGIN.SECRET;
 
 
 /**
@@ -35,8 +35,8 @@ let SECRET       = config.WECHAT.LOGIN.SECRET;
  */
 exports.getCode = (req, res)=> {
     let redirect_uri = REDIRECT_URI;
-    if(req.params && req.params.role && redirect_uri.indexOf(req.params.role)<0){
-        redirect_uri+='/'+req.params.role;
+    if (req.params && req.params.role && redirect_uri.indexOf(req.params.role) < 0) {
+        redirect_uri += '/' + req.params.role;
     }
     res.redirect('https://open.weixin.qq.com/connect/oauth2/authorize?appid=' + APPID + '&redirect_uri=' + redirect_uri + '&response_type=code&scope=' + SCOPE + '&state=' + Date.now() + '#wechat_redirect');
 }
@@ -57,22 +57,26 @@ exports.getCode = (req, res)=> {
 
 exports.getAccessToken = (CODE)=> {
     return new Promise((resolve, reject)=> {
-        request('https://api.weixin.qq.com/sns/oauth2/access_token?appid=' + APPID + '&secret=' + SECRET + '&code=' + CODE + '&grant_type=authorization_code', (error, response, body)=> {
-            if (!error && response.statusCode == 200) {
-                body = JSON.parse(body);
-                if (body.errcode) {
-                    console.warn(body.errmsg);
-                    reject(body.errmsg);
+        request.get('https://api.weixin.qq.com/sns/oauth2/access_token?appid=' + APPID + '&secret=' + SECRET + '&code=' + CODE + '&grant_type=authorization_code')
+            .then((result)=> {
+                if (result.statusCode == 200) {
+                    if (result.body.errcode) {
+                        console.warn(result.body.errmsg);
+                        reject(result.body.errmsg);
+                    }
+                    else {
+                        resolve(result.body);
+                    }
                 }
                 else {
-                    resolve(body);
+                    console.warn('wechatLogin', 'getAccessToken', 'response.statusCode', result.statusCode);
+                    reject(result.statusCode);
                 }
-            }
-            else {
-                console.warn(error);
-                reject(error);
-            }
-        });
+            })
+            .catch((err)=> {
+                console.warn(err);
+                reject(err);
+            });
     });
 
 };
@@ -92,22 +96,26 @@ exports.getAccessToken = (CODE)=> {
 
 exports.refreshAccessToken = (REFRESH_TOKEN)=> {
     return new Promise((resolve, reject)=> {
-        request('https://api.weixin.qq.com/sns/oauth2/refresh_token?appid=' + APPID + '&grant_type=refresh_token&refresh_token=' + REFRESH_TOKEN, (error, response, body)=> {
-            if (!error && response.statusCode == 200) {
-                body = JSON.parse(body);
-                if (body.errcode) {
-                    console.warn(body.errmsg);
-                    reject(body.errmsg);
+        request.get('https://api.weixin.qq.com/sns/oauth2/refresh_token?appid=' + APPID + '&grant_type=refresh_token&refresh_token=' + REFRESH_TOKEN)
+            .then((result)=> {
+                if (result.statusCode == 200) {
+                    if (result.body.errcode) {
+                        console.warn(result.body.errmsg);
+                        reject(result.body.errmsg);
+                    }
+                    else {
+                        resolve(result.body);
+                    }
                 }
                 else {
-                    resolve(body);
+                    console.warn('refreshAccessToken', 'getAccessToken', 'response.statusCode', result.statusCode);
+                    reject(result.statusCode);
                 }
-            }
-            else {
-                console.warn(error);
-                reject(error);
-            }
-        });
+            })
+            .catch((err)=> {
+                console.warn(err);
+                reject(err);
+            });
     });
 }
 
@@ -121,22 +129,26 @@ exports.refreshAccessToken = (REFRESH_TOKEN)=> {
  */
 exports.checkToken = (ACCESS_TOKEN, OPENID)=> {
     return new Promise((resolve, reject)=> {
-        request('https://api.weixin.qq.com/sns/auth?access_token=' + ACCESS_TOKEN + '&openid=' + OPENID, (error, response, body)=> {
-            if (!error && response.statusCode == 200) {
-                body = JSON.parse(body);
-                if (body.errcode) {
-                    console.warn(body.errmsg);
-                    reject(body.errmsg);
+        request.get('https://api.weixin.qq.com/sns/auth?access_token=' + ACCESS_TOKEN + '&openid=' + OPENID)
+            .then((result)=> {
+                if (result.statusCode == 200) {
+                    if (result.body.errcode) {
+                        console.warn(result.body.errmsg);
+                        reject(result.body.errmsg);
+                    }
+                    else {
+                        resolve(result.body);
+                    }
                 }
                 else {
-                    resolve(body);
+                    console.warn('wechatLogin', 'checkToken', 'response.statusCode', result.statusCode);
+                    reject(result.statusCode);
                 }
-            }
-            else {
-                console.warn(error);
-                reject(error);
-            }
-        });
+            })
+            .catch((err)=> {
+                console.warn(err);
+                reject(err);
+            });
     });
 };
 
@@ -162,21 +174,25 @@ exports.checkToken = (ACCESS_TOKEN, OPENID)=> {
 
 exports.getUserinfo = (ACCESS_TOKEN, OPENID)=> {
     return new Promise((resolve, reject)=> {
-        request('https://api.weixin.qq.com/sns/userinfo?access_token=' + ACCESS_TOKEN + '&openid=' + OPENID, (error, response, body)=> {
-            if (!error && response.statusCode == 200) {
-                body = JSON.parse(body);
-                if (body.errcode) {
-                    console.warn(body.errmsg);
-                    reject(body.errmsg);
+        request.get('https://api.weixin.qq.com/sns/userinfo?access_token=' + ACCESS_TOKEN + '&openid=' + OPENID)
+            .then((result)=> {
+                if (result.statusCode == 200) {
+                    if (result.body.errcode) {
+                        console.warn(result.body.errmsg);
+                        reject(result.body.errmsg);
+                    }
+                    else {
+                        resolve(result.body);
+                    }
                 }
                 else {
-                    resolve(body);
+                    console.warn('wechatLogin', 'getUserinfo', 'response.statusCode', result.statusCode);
+                    reject(result.statusCode);
                 }
-            }
-            else {
-                console.warn(error);
-                reject(error);
-            }
-        });
+            })
+            .catch((err)=> {
+                console.warn(err);
+                reject(err);
+            });
     });
 }

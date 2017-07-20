@@ -9,8 +9,8 @@
  */
 
 'use strict';
-const request = require('request');
-const utils   = require('./index');
+const request = new require('request-utils')();
+const utils   = require('./wechatUtils');
 const config  = require('./wechatConfig');
 const Cache   = require('cache_utils');
 
@@ -47,22 +47,26 @@ exports.shareSign = (args) => {
  */
 let getAccessToken = () => {
     return new Promise(function (resolve, reject) {
-        request('https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=' + APPID + '&secret=' + SECRET, (error, response, body)=> {
-            if (!error && response.statusCode == 200) {
-                body = JSON.parse(body);
-                if (body.errcode) {
-                    console.warn(body.errmsg);
-                    reject(body.errmsg);
+        request.get('https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=' + APPID + '&secret=' + SECRET)
+            .then((result)=> {
+                if (result.statusCode == 200) {
+                    if (result.body.errcode) {
+                        console.warn(result.body.errmsg);
+                        reject(result.body.errmsg);
+                    }
+                    else {
+                        resolve(result.body.access_token);
+                    }
                 }
                 else {
-                    resolve(body.access_token);
+                    console.warn('wechatShare', 'getAccessToken', 'response.statusCode', result.statusCode);
+                    reject(result.statusCode);
                 }
-            }
-            else {
-                console.warn(error);
-                reject(error);
-            }
-        });
+            })
+            .catch((err)=> {
+                console.warn(err);
+                reject(err);
+            });
     });
 }
 /**
@@ -72,22 +76,26 @@ let getAccessToken = () => {
  */
 let getJsapiTicket = (ACCESS_TOKEN)=> {
     return new Promise(function (resolve, reject) {
-        request('https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=' + ACCESS_TOKEN + '&type=jsapi', (error, response, body)=> {
-            if (!error && response.statusCode == 200) {
-                body = JSON.parse(body);
-                if (body.errcode) {
-                    console.warn(body.errmsg);
-                    reject(body.errmsg);
+        request.get('https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=' + ACCESS_TOKEN + '&type=jsapi')
+            .then((result)=> {
+                if (result.statusCode == 200) {
+                    if (result.body.errcode) {
+                        console.warn(result.body.errmsg);
+                        reject(result.body.errmsg);
+                    }
+                    else {
+                        resolve(result.body.ticket);
+                    }
                 }
                 else {
-                    resolve(body.ticket);
+                    console.warn('wechatShare', 'getJsapiTicket', 'response.statusCode', result.statusCode);
+                    reject(result.statusCode);
                 }
-            }
-            else {
-                console.warn(error);
-                reject(error);
-            }
-        });
+            })
+            .catch((err)=> {
+                console.warn(err);
+                reject(err);
+            });
     });
 }
 
@@ -105,7 +113,7 @@ module.exports.getShareOpts = (URL) => {
     let access_token, jsapi_ticket;
 
     return new Promise(function (resolve, reject) {
-        autoCache.get('JS_ACCESS_TOKEN')
+        autoCache.get('JS_ACCESS_TOKEN_'+config.HOSTNAME)
             .then((result)=> {
                 if (!result) {
                     return getAccessToken();
@@ -118,9 +126,9 @@ module.exports.getShareOpts = (URL) => {
             .then((result)=> {
                 if (result) {
                     access_token = result;
-                    autoCache.set('JS_ACCESS_TOKEN', result, 7195);
+                    autoCache.set('JS_ACCESS_TOKEN_'+config.HOSTNAME, result, 7195);
                 }
-                return autoCache.get('JS_API_TICKET');
+                return autoCache.get('JS_API_TICKET_'+config.HOSTNAME);
             })
             .then((result)=> {
                 if (result) {
@@ -134,7 +142,7 @@ module.exports.getShareOpts = (URL) => {
             .then((result)=> {
                 if (result) {
                     jsapi_ticket = result;
-                    autoCache.set('JS_API_TICKET', result, 7195);
+                    autoCache.set('JS_API_TICKET_'+config.HOSTNAME, result, 7195);
                 }
                 ret.jsapi_ticket = jsapi_ticket;
                 ret.signature = exports.shareSign(ret);

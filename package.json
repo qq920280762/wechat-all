@@ -1,6 +1,6 @@
 {
   "name": "wechat-all",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "wechat pay and share  and login and  auth",
   "main": "index.js",
   "scripts": {
@@ -28,7 +28,7 @@
   "dependencies": {
     "cache_utils": "^1.0.0",
     "crypto": "0.0.3",
-    "request": "^2.81.0",
+    "request-utils": "^1.0.3",
     "xml2js": "^0.4.17"
   }
 }

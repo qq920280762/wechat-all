@@ -7,9 +7,9 @@
  */
 
 'use strict';
-var utils   = require('./index');
-var request = require('request');
-var config  = require('./wechatConfig');
+const utils   = require('./wechatUtils');
+const request = new require('request-utils')();
+const config  = require('./wechatConfig');
 
 //公众号的唯一标识（企业号corpid即为此appId）
 let APPID = config.WECHAT.PAY.APPID;
@@ -103,14 +103,10 @@ function getResult(flag) {
  */
 exports.getOrder = (JSONOpts)=> {
     return new Promise((resolve, reject)=> {
-        request({
-            url   : 'https://api.mch.weixin.qq.com/pay/unifiedorder',
-            method: 'POST',
-            body  : getXML(JSONOpts)
-        }, (error, response, body) => {
-            if (!error && response.statusCode == 200) {
-
-                utils.xmlToJson(body)
+        request.post('https://api.mch.weixin.qq.com/pay/unifiedorder',getXML(JSONOpts))
+        .then((result)=>{
+            if(response.statusCode == 200){
+                utils.xmlToJson(result.body)
                     .then((result)=> {
                         if('FAIL'==result.return_code){
                             reject(result.return_msg);
@@ -121,13 +117,15 @@ exports.getOrder = (JSONOpts)=> {
                     .catch((error)=> {
                         reject(error);
                     })
+            }else{
+                console.warn('wechatPay', 'getOrder', 'response.statusCode', result.statusCode);
+                reject(result.statusCode);
             }
-            else {
-                console.warn(error);
-                reject(error);
-            }
-
-        });
+        })
+        .catch((err)=>{
+            console.error(err);
+            reject(err);
+        })
     });
 }
 
