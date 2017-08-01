@@ -26,7 +26,7 @@ let BODY = config.WECHAT.PAY.BODY;
 //时效
 let EXPIREDTIME = config.WECHAT.PAY.EXPIREDTIME;
 
-let wechatPay = module.exports = function(opts){
+function WechatPay(opts){
 
     if(!!opts && !!opts.config){
         APPID = opts.config.WECHAT.LOGIN.APPID;
@@ -120,7 +120,7 @@ function getResult(flag) {
         "trade_type":"JSAPI"
      }
  */
-wechatPay.prototype.getOrder = (JSONOpts)=> {
+WechatPay.prototype.getOrder = (JSONOpts)=> {
     return new Promise((resolve, reject)=> {
         request.post('https://api.mch.weixin.qq.com/pay/unifiedorder',getXML(JSONOpts))
         .then((result)=>{
@@ -148,7 +148,7 @@ wechatPay.prototype.getOrder = (JSONOpts)=> {
     });
 }
 
-wechatPay.prototype.paySign = (data)=> {
+WechatPay.prototype.paySign = (data)=> {
     let keys    = Object.keys(data);
     keys        = keys.sort();
     let newArgs = {};
@@ -192,7 +192,7 @@ wechatPay.prototype.paySign = (data)=> {
            "transaction_id":"4001462001201705232218238835"
        }
  */
-wechatPay.prototype.callBack = (req, res)=> {
+WechatPay.prototype.callBack = (req, res)=> {
     return new Promise((resolve, reject)=> {
         //获取REQUEST中BUFFER
         utils.readStream(req, (error, buffer)=> {
@@ -228,5 +228,8 @@ wechatPay.prototype.callBack = (req, res)=> {
         });
     });
 }
+
+
+module.exports = WechatPay;
 
 
